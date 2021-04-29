@@ -1,5 +1,5 @@
 
-import {API_TOKEN} from "../Tokens/ApiToken"
+import {API_TOKEN} from "../Tokens/APITokenMovie";
 
 export function getFilmsFromApiWithSearchedText (text, page) {
         const url = 'https://api.themoviedb.org/3/search/movie?api_key=' + API_TOKEN + '&language=fr&query=' + text + "&page=" + page

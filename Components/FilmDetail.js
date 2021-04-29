@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, View, Image, Text, TouchableOpacity, ScrollView, ActivityIndicator} from 'react-native';
+import {StyleSheet, View, Image, Text, TouchableOpacity, ScrollView, ActivityIndicator, Button} from 'react-native';
 import {getMoviebyId, getImageFromApi, getMovieTrailerById} from "../API/TMDBApi";
 import {StatusBar} from "expo-status-bar";
 import {Ionicons} from "@expo/vector-icons";
@@ -7,20 +7,23 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 import Flag from 'react-native-flags';
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
 import moment from "moment";
+import { connect } from "react-redux";
 
 
 
-
-
-
-export default class componentName extends Component {
+class FilmDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            film:undefined,
+            film: undefined,
             isLoading: false,
             trailerId: "",
         }
+    }
+
+    _toggleFavorite() {
+            const action = { type: 'TOGGLE_FAVORITE', value: this.state.film }
+            this.props.dispatch(action);
     }
 
     _displayLoading() {
@@ -33,7 +36,22 @@ export default class componentName extends Component {
         }
     }
 
+
+    /*componentDidUpdate() {
+        console.log("componentDidUpdate : ")
+        console.log(this.props.favoritseMovie)
+    }*/
+
+
     componentDidMount() {
+
+       /* const favoriteFilmIndex = this.props.favoritseMovie.findIndex(item => item.id === this.props.navigation.getParam('idFilm'));
+        if (favoriteFilmIndex !== -1) {
+            this.setState({film: this.props.favoritseMovie[favoriteFilmIndex]});
+            return;
+        }*/
+
+
        /* this.props.route.params.idFilm*/
         getMoviebyId(this.props.route.params.idFilm)
             .then((res) =>{
@@ -42,6 +60,8 @@ export default class componentName extends Component {
                     isLoading: false
                 })
             })
+
+
         getMovieTrailerById(this.props.route.params.idFilm)
             .then((res) =>{
                 this.setState({
@@ -50,14 +70,27 @@ export default class componentName extends Component {
             })
     }
 
+
+    _displayFavoriteImage() {
+        var sourceImg = require('../assets/ic_favorite_border.png');
+        if (this.props.favoritseMovie.findIndex(item => item.id === this.state.film.id) !==-1){
+            sourceImg = require('../assets/ic_favorite.png');
+        }
+        return(
+            <Image source={sourceImg} style={styles.favorite_img} />
+        )
+    }
+
+
+
     _displayFim(){
-        if (this.state.film !=undefined){
+        if (this.state.film !==undefined){
             return (
                 <ScrollView>
                     <View style={styles.body}>
 
                         <View style={styles.header_container}>
-                            <Image style={styles.image} source={{url: getImageFromApi(this.state.film.poster_path)}} ></Image>
+                            <Image style={styles.image} source={{url: getImageFromApi(this.state.film.poster_path)}} />
                             <View style={styles.content_container}>
                                 <View style={styles.header_container}>
                                     <Text style={styles.title_text}>{this.state.film.title}</Text>
@@ -66,8 +99,6 @@ export default class componentName extends Component {
                                 <View style={{ marginTop: hp(1)}}>
                                     <Text style={styles.vote_text}>Rate: {this.state.film.vote_average}/10</Text>
                                 </View>
-
-
 
                                 <View style={[styles.date_container,{ marginTop: hp(1)}]}>
                                     <Text style={styles.date_text}>Duration: {this.state.film.runtime} min</Text>
@@ -90,6 +121,10 @@ export default class componentName extends Component {
                         </View>
 
                         <View style={styles.body}>
+                            <TouchableOpacity style={styles.favorite_container} onPress={() => this._toggleFavorite()}>
+                                {this._displayFavoriteImage()}
+                            </TouchableOpacity>
+
                             <Text style={{textAlign: 'center', fontSize:30, marginBottom:hp(2),
                                 marginTop: hp(2), fontWeight:'bold'}}>Description</Text>
                             <View style={styles.description_container}>
@@ -100,7 +135,6 @@ export default class componentName extends Component {
                                     height={500}
                                     play={false}
                                     videoId={this.state.trailerId}
-                                    /*videoId=  {'84WIaK3bl_s'}*/
                                 />
                             </View>
 
@@ -115,7 +149,6 @@ export default class componentName extends Component {
 
 
     render() {
-
     return (
         <View style={styles.container}>
             <StatusBar style="dark" />
@@ -134,6 +167,8 @@ export default class componentName extends Component {
         </View>
     );
   }
+
+
 }
 
 
@@ -196,7 +231,7 @@ const styles = StyleSheet.create({
     },
     date_text: {
         textAlign: 'left',
-        fontSize: 20
+        fontSize: 18
     },
     loading_container: {
         position: 'absolute',
@@ -206,5 +241,21 @@ const styles = StyleSheet.create({
         bottom: 0,
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    favorite_container: {
+        alignItems: "center",
+    },
+    favorite_img: {
+        width: 40,
+        height: 40,
     }
   });
+
+
+function mapStateToProps(state) {
+    return {
+        favoritseMovie: state.favoritseMovie
+    }
+
+}
+export default connect(mapStateToProps)(FilmDetail)
