@@ -9,7 +9,7 @@ npm-debug.*
 *.orig.*
 web-build/
 
-Tokens/
+Tokens/*
 
 # macOS
 .DS_Store
